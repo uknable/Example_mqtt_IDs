@@ -38,9 +38,14 @@ let previous_redSliderValue;
 let previous_greenSliderValue;
 let previous_blueSliderValue;
 
-let font;
-
 let pad;
+
+// following line to create random string of numbers and letters from user doubletap
+// https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
+let userId = (Math.random() + 1).toString(36).substring(5);
+sendMessage(`create,${userId}`)
+
+console.log(userId); // remove after testing
 
 class Pad {
 	constructor(centerX, centerY, w, h) {

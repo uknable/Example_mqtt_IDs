@@ -18,7 +18,21 @@ document.addEventListener('touchend', function(e) {
     document.documentElement.style.overflow = 'auto';
 });
 
+class User {
+    constructor(id) {
+        this.xPos = windowWidth/2;
+        this.yPos = windowHeight/2;
+        this.colourRed = 255;
+        this.colourGreen = 255;
+        this.colourBlue = 255;
+        this.id = id;
+    }
 
+    display() {
+        fill(this.colourRed, this.colourGreen, this.colourBlue);
+        ellipse(this.xPos, this.yPos, 50, 50);
+    }
+}
 
 //////////////////////////////////////////////////
 //FIXED SECTION: DO NOT CHANGE THESE VARIABLES
@@ -35,6 +49,7 @@ let colourRed;
 let colourGreen;
 let colourBlue;
 
+let users = [];
 
 function setup() {
 	/////////////////////////////////////////////
@@ -86,7 +101,39 @@ function receiveMqtt(data) {
 	console.log('Topic: ' + topic + ', message: ' + message);
 
 	if (topic.includes('ideaIDs')) {
-		walkerInfo = message.split(',');
+		let info = message.split(',');
+        let action = info[0];
+
+        if (action === "create") {
+            // info array: "remove,${userID}"
+            users.push(new User(info[1]));
+        }
+
+        if (action === "update") {
+            // info array: "update,${userID},${xposVal},${yposVal},${redVal},${greenVal},${blueVal}"
+            let userId = info[1];
+
+            // find user in users array using Array.find()
+
+            // then update user properties
+        }
+
+        if (action === "remove") {
+            // info array: "remove,${userID}"
+            let userId = info[1];
+
+            // find user in users array using Array.find()
+            
+            // then remove user from users array using Array.splice()
+
+            // client will send pings to server to ensure connection using millis()
+            // remove user by checking activity 
+        }
+
+        if (action === "ping") {
+            // info array: "ping,${userID}"
+        }
+
         xPos = map(walkerInfo[0].trim(), -1, 1, 0, windowWidth);
         yPos = map(walkerInfo[1].trim(), -1, 1, 0, windowHeight);
 		colourRed = walkerInfo[2].trim();
