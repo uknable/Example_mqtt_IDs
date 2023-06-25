@@ -20,18 +20,32 @@ document.addEventListener('touchend', function(e) {
 
 class User {
     constructor(id) {
-        this.xPos = windowWidth/2;
-        this.yPos = windowHeight/2;
-        this.colourRed = 255;
-        this.colourGreen = 255;
-        this.colourBlue = 255;
-        this.id = id;
+        this.xPos;
+        this.yPos;
+        this.colourRed;
+        this.colourGreen;
+        this.colourBlue;
+        this.id = id; // used as a key for the 'users' object
+        this.lastActive = 0; // used to determine when to remove from the 'users' object
     }
 
     display() {
         fill(this.colourRed, this.colourGreen, this.colourBlue);
         ellipse(this.xPos, this.yPos, 50, 50);
     }
+}
+
+// called when a message is received
+// users[`${id}`] is used over dot notation so string interpolation can be used to find the key/value in the 'users' object
+function updateUser(id, x, y, r, g, b) {
+    users[`${id}`].xPos = map(x, -1, 1, 0, windowWidth);
+    users[`${id}`].yPos = map(y, -1, 1, 0, windowHeight);
+    users[`${id}`].colourRed = r;
+    users[`${id}`].colourGreen = g;
+    users[`${id}`].colourBlue = b;
+
+    // set lastActive to current frameCount which will be checked to determine when this user is deleted
+    users[`${id}`].lastActive = frameCount;
 }
 
 //////////////////////////////////////////////////
@@ -49,7 +63,9 @@ let colourRed;
 let colourGreen;
 let colourBlue;
 
-let users = [];
+// new users will be stored in this 'users' object with their id as the key and class object as the value
+let users = {};
+const maxSessionTime = 60; // used to determine when to delete a user from the 'users' object
 
 function setup() {
 	/////////////////////////////////////////////
@@ -77,8 +93,18 @@ function setup() {
 
 function draw() {
     background(128);
-    fill(colourRed, colourGreen, colourBlue);
-    ellipse(xPos, yPos, 50, 50);
+
+    // 'for...in' syntax is used to iterate over object key/value pairs
+    for (const user in users) {
+        // if the user was last updated more than 'maxSessionTime' frames ago
+        //      then delete that user
+        //      else, display that user
+        if (frameCount - users[user].lastActive > maxSessionTime) {
+            delete users[user];
+        } else {
+            users[user].display();
+        }
+    }
 }
 
 
@@ -102,42 +128,15 @@ function receiveMqtt(data) {
 
 	if (topic.includes('ideaIDs')) {
 		let info = message.split(',');
-        let action = info[0];
+        let userId = info[0];
 
-        if (action === "create") {
-            // info array: "remove,${userID}"
-            users.push(new User(info[1]));
+        // if there is not a key within the 'users' object that matches the sender's userId
+        //      then create a key/value pair in 'users'
+        if (!Object.keys(users).includes(userId)) {
+            users[`${userId}`] = new User(userId);
         }
 
-        if (action === "update") {
-            // info array: "update,${userID},${xposVal},${yposVal},${redVal},${greenVal},${blueVal}"
-            let userId = info[1];
-
-            // find user in users array using Array.find()
-
-            // then update user properties
-        }
-
-        if (action === "remove") {
-            // info array: "remove,${userID}"
-            let userId = info[1];
-
-            // find user in users array using Array.find()
-            
-            // then remove user from users array using Array.splice()
-
-            // client will send pings to server to ensure connection using millis()
-            // remove user by checking activity 
-        }
-
-        if (action === "ping") {
-            // info array: "ping,${userID}"
-        }
-
-        xPos = map(walkerInfo[0].trim(), -1, 1, 0, windowWidth);
-        yPos = map(walkerInfo[1].trim(), -1, 1, 0, windowHeight);
-		colourRed = walkerInfo[2].trim();
-		colourGreen = walkerInfo[3].trim();
-		colourBlue = walkerInfo[4].trim();
+        // use spread operator to apply each element of the array to the paramters of the 'updateUser' function
+        updateUser(...info);
 	}
 }

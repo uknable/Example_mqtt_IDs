@@ -40,10 +40,9 @@ let previous_blueSliderValue;
 
 let pad;
 
-// following line to create random string of numbers and letters from user doubletap
+// following line to create random string of numbers and letters sourced from user 'doubletap'
 // https://stackoverflow.com/questions/1349404/generate-random-string-characters-in-javascript
 let userId = (Math.random() + 1).toString(36).substring(5);
-sendMessage(`create,${userId}`)
 
 console.log(userId); // remove after testing
 
@@ -164,7 +163,7 @@ function touchEnded() {
 }
 
 function checkAndProcessColourChange() {
-	var changed = false;
+	let changed = false;
 	// RED slider
 	if (redSlider.value() != previous_redSliderValue) {
 		previous_redSliderValue = redSlider.value();
@@ -183,19 +182,23 @@ function checkAndProcessColourChange() {
 		changed = true;
 	}	
 
+    // x coordinates
     if (pad.xCoord != pad.previous_xCoord) {
         pad.previous_xCoord = pad.xCoord;
         changed = true;
     }
 
+    // y coordinates
     if (pad.yCoord != pad.previous_yCoord) {
         pad.previous_yCoord = pad.yCoord;
         changed = true;
     }
 
+    // if there is a change in any value, then send all values to the receiver
 	if (changed) {
-		var colourValue = pad.xCoord + ',' + pad.yCoord + ',' + redSlider.value() + ',' + greenSlider.value() + ',' + blueSlider.value();
-		sendMessage(colourValue);
+		let message = `${userId},${pad.xCoord},${pad.yCoord},${redSlider.value()},${greenSlider.value()},${blueSlider.value()}`
+
+		sendMessage(message);
 	}
 }
 
@@ -208,8 +211,8 @@ function checkAndProcessColourChange() {
   === PLEASE DO NOT CHANGE OR DELETE THIS SECTION ===
   This function sends a MQTT message to server
 ***********************************************************************/
-function sendMessage(colourValue) {
-	let postData = JSON.stringify({ id: 1, 'message': colourValue });
+function sendMessage(message) {
+	let postData = JSON.stringify({ id: 1, 'message': message });
 
 	xmlHttpRequest.open("POST", HOST + '/sendMessage', false);
     xmlHttpRequest.setRequestHeader("Content-Type", "application/json");
