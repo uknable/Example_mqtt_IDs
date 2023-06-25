@@ -65,7 +65,7 @@ let colourBlue;
 
 // new users will be stored in this 'users' object with their id as the key and class object as the value
 let users = {};
-const maxSessionTime = 60; // used to determine when to delete a user from the 'users' object
+const maxSessionTime = 300; // used to determine when to delete a user from the 'users' object
 
 function setup() {
 	/////////////////////////////////////////////
